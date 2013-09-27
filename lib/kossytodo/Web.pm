@@ -101,9 +101,9 @@ sub add_entry {
     $body = '' if ! defined $body;
     $nickname = 'anonymous' if ! defined $nickname;
     my $id = substr Digest::SHA::sha1_hex($$ . join("\0", @_) . rand(1000) ), 0, 16;
-    $self->dbh->do(
-       # q{INSERT INTO entry (id,nickname,body,created_at) VALUES ( ?, ?, ?, DATETIME('now') )},undef, $id, $nickname, $body
-	q{INSERT INTO entry (id,nickname,body,created_at) VALUES ( ?, ?, ?, now() )},$id, $nickname, $body
+    $self->dbh->query(
+        q{INSERT INTO entry (id,nickname,body,created_at) VALUES ( ?, ?, ?, now() )},
+        $id, $nickname, $body
     );
     return $id;
 }
@@ -114,7 +114,7 @@ sub entry_list {
     $offset = 0 if defined $offset;
     my $rows = $self->dbh->select_all(
         q{SELECT * FROM entry ORDER BY created_at DESC LIMIT ?,11},
-        ,$offset
+        $offset
     );
     my $next;
     $next = pop @$rows if @$rows > 10;
@@ -123,4 +123,3 @@ sub entry_list {
 
 
 1;
-
